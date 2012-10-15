@@ -2,3 +2,5 @@ parseWayback
 ============
 
 A collection of tools to parse Wayback Machine of archive.org to get a historical views of web pages
+
+chenxm35@gmail.com
