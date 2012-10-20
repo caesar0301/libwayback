@@ -1,4 +1,21 @@
 #!/bin/python
+"""
+Library for program Archive_crawler.
+Copyright (C) 2012  xiamingc, SJTU -  chenxm35@gmail.com
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
 import urllib
 import urllib2
 import html5lib
@@ -6,13 +23,15 @@ import re
 import os
 import datetime
 import logging
+import time
+import random
 from lxml import etree
 from html5lib import treebuilders
 
 #***********************************
 # Global configurations
 WAYBACK_SEARCH_PREFIX = 'http://wayback.archive.org/web/'
-RE_TIMESTAMP = r'([1-2]\d{3})(0\d|1[0-2])([0-2]\d|3[0,1])([0,1]\d|2[0-3])([0-5]\d)?([0-5]\d)?'
+RE_TIMESTAMP = r'\/([1-2]\d{3})(0\d|1[0-2]|[1-9])([0-2]\d|3[0,1]|[1-9])([0,1]\d|2[0-3]|[1-9])([0-5]\d)?([0-5]\d)?'
 #***********************************
 
 #***********************************
@@ -137,15 +156,23 @@ def parse_wayback(siteurl):
 
 	sitedb = SiteDB(siteurl)	# new sitedb
 	for year in range(first_year, datetime.datetime.now().year+1):
-		wayback_url_year = "%s%d0601000000*/%s" % (WAYBACK_SEARCH_PREFIX, year, siteurl)
+		time.sleep(random.randint(1,3))	# Be polite to the host server
 		# Note: the timestamp in search url indicates the time scale of query:
 		# E.g., wildcard * matches all of the items in specific year.
 		# If only * is supported, the results of latest year are returned.
 		# I found that it returned wrong results if the month and day numbers are small like 0101,
 		# so a bigger number is used to match wildly.
+		wayback_url_year = "%s%d0601000000*/%s" % (WAYBACK_SEARCH_PREFIX, year, siteurl)
 		for item in _parse_wayback_page(wayback_url_year):
-			if year == _extract_wayback_time(item).year:
+			try:
+				wayback_year =  _extract_wayback_time(item).year
+			except AttributeError:
+				logging.error("Invalid timestap of wayback url: %s" % item)
+				continue
+			if year == wayback_year:
 				# To exclude duplicated items that don't match the year
+				# By default the results of latest year are returned 
+				# if some year hasn't been crawled
 				sitedb.add_item(year, item)
 	return sitedb
 

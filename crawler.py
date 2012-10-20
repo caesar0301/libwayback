@@ -1,13 +1,36 @@
 #!/bin/python
+"""
+Main crawler for program Archive_crawler.
+Copyright (C) 2012  xiamingc, SJTU -  chenxm35@gmail.com
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
 import argparse
 import logging
 import libcrawler
 
 LOG_FILE = 'crawler.log'
 
-print("Archive_crawler - program to parse historical urls of web page from archive.org.\n" +
-	"Version 0.1 @COPYLEFT(2012)\n" +
-	"xiamingc, SJTU - chenxm35@gmail.com\n")
+__version__ = """Archive_crawler - Version 0.1
+Program to parse historical urls of web page from archive.org.
+Copyright (C) 2012
+xiamingc, SJTU - chenxm35@gmail.com
+This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
+This is free software, and you are welcome to redistribute it
+under certain conditions; type `show c' for details.
+"""
+print (__version__)
 print ("See %s for running information" % LOG_FILE)
 
 # Input arguments
@@ -29,10 +52,11 @@ for url in open(urllist):
 	url = url.rstrip('\r\n')
 	if url == '':
 		continue
+	print ("Crawling %s" % url)
 	logging.info('Start parsing: %s' % url)
 	sitedb = libcrawler.parse_wayback(url)
 	logging.info('Finish parsing: %s' % url)
 	if sitedb != None:
 		logging.info('Dump records of %s to file %s' % (url, url+'.txt'))
 		sitedb.dump('results')
-		sitedb.dump_live('results_live')
+		sitedb.dump_live('results/live')

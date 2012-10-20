@@ -1,14 +1,24 @@
-parseWayback
+Introduction
 ============
-
 A collection of tools to parse Wayback Machine of archive.org to get a historical views of web pages
+by xiamingc,SJTU - chenxm35@gmail.com
 
-Archive.org Q&A
-How can I view a page without the Wayback code in it?
-http://faq.web.archive.org/page-without-wayback-code/
-How can I find all the pages from one site?
-http://faq.web.archive.org/find-all-the-pages-from-one-site/
+Requirements
+============
+Python 2.6+
+lxml
+html5lib
 
+Simple usage
+============
+If you have python and required packages installed, you can run with python script:
+>>python crawler.py urlfile
 
-chenxm
-chenxm35@gmail.com
+In windows (win64) environment without python installed, you can run the command below:
+>>dist/crawler.exe urlfile
+
+To build other windows versions of crawler, you can use setup script:
+>>python setup_exe.py
+The generated distribution locates in "dist" folder.
+
+The crawled historical urls locates in "results".
