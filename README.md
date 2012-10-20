@@ -14,11 +14,14 @@ Simple usage
 If you have python and required packages installed, you can run with python script:
 >>python crawler.py urlfile
 
+
 In windows (win64) environment without python installed, you can run the command below:
 >>dist/crawler.exe urlfile
 
+
 To build other windows versions of crawler, you can use setup script:
 >>python setup_exe.py
+
 The generated distribution locates in "dist" folder.
 
 The crawled historical urls locates in "results".
