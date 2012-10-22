@@ -37,7 +37,7 @@ RE_TIMESTAMP = r'\/([1-2]\d{3})(0\d|1[0-2]|[1-9])([0-2]\d|3[0,1]|[1-9])([0,1]\d|
 #***********************************
 # Private utilities
 def _sanitize_name(fname):
-	return fname.strip('\r \n').replace(".", "_")
+	return re.sub(r'[\.\/\\\?#&]', "_", fname.strip('\r \n'))
 
 def _open_url(url):
 	try:
@@ -68,13 +68,28 @@ def _extract_wayback_time(url):
 		res[i] = mres.group(i+1) != None and int(mres.group(i+1)) or 0
 	return datetime.datetime(res[0], res[1], res[2], res[3], res[4], res[5])
 
+def _valid_XML_char_ordinal(i):
+	## As for the XML specification, valid chars must be in the range of
+	## Char ::= #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+	## [Ref] http://stackoverflow.com/questions/8733233/filtering-out-certain-bytes-in-python
+    return (# conditions ordered by presumed frequency
+		0x20 <= i <= 0xD7FF 
+	    or i in (0x9, 0xA, 0xD)
+	    or 0xE000 <= i <= 0xFFFD
+	    or 0x10000 <= i <= 0x10FFFF
+	    )
+
 def _parse_wayback_page(url):
 	his_urls = []
 	wholepage = _open_url(url)
 	if wholepage == None:
 		return his_urls
 	parser = html5lib.HTMLParser(tree = treebuilders.getTreeBuilder("lxml"))
-	html_doc = parser.parse(wholepage)
+	try:
+		html_doc = parser.parse(wholepage)
+	except ValueError:
+		wholepage_clean = ''.join(c for c in wholepage if _valid_XML_char_ordinal(ord(c)))
+		html_doc = parser.parse(wholepage_clean)
 	body = html_doc.find("./{*}body")
 	position_div = body.find("./{*}div[@id='position']")
 	wayback_cal = position_div.find("./{*}div[@id='wbCalendar']")
@@ -177,5 +192,4 @@ def parse_wayback(siteurl):
 	return sitedb
 
 if __name__ == '__main__':
-	sitedb = SiteDB('sina.com.cn')
-	sitedb.dump('results')
+	print _sanitize_name('attracta.com/user/?v5=##&')
