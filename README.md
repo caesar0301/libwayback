@@ -7,11 +7,11 @@ By xiamingc,SJTU - chenxm35@gmail.com
 Requirements
 ------------
 
-Python 2.6+
+Python 2.6+ (<3)
 
-lxml
+lxml 2.3+
 
-html5lib
+html5lib 0.95+
 
 
 Simple usage
