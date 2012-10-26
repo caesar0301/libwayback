@@ -46,7 +46,7 @@ numeric_level = getattr(logging, loglevel.upper(), None)
 if not isinstance(numeric_level, int):
     raise ValueError('Invalid log level: %s' % loglevel)
 logging.basicConfig(format='%(asctime)s - %(name)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s',
-					filename=LOG_FILE, filemode='w', level=numeric_level)
+					filename=LOG_FILE, filemode='a', level=numeric_level)
 
 for url in open(urllist):
 	url = url.rstrip('\r\n')

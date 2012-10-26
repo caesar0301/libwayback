@@ -31,7 +31,7 @@ from html5lib import treebuilders
 #***********************************
 # Global configurations
 WAYBACK_SEARCH_PREFIX = 'http://wayback.archive.org/web/'
-RE_TIMESTAMP = r'\/([1-2]\d{3})(0\d|1[0-2]|[1-9])([0-2]\d|3[0,1]|[1-9])([0,1]\d|2[0-3]|[1-9])([0-5]\d)?([0-5]\d)?'
+RE_TIMESTAMP = r"\/([1-2]\d{3})\d*"
 #***********************************
 
 #***********************************
@@ -58,15 +58,12 @@ def _convert_live_url(url):
 	mres = re.search(pattern, url)
 	return url[:mres.end()] + 'id_' + url[mres.end():]
 
-def _extract_wayback_time(url):
+def _extract_wayback_year(url):
 	pattern = re.compile(RE_TIMESTAMP)
 	mres = re.search(pattern, url)
 	if mres == None:
 		return None
-	res = [0]*6
-	for i in range(0, 6):
-		res[i] = mres.group(i+1) != None and int(mres.group(i+1)) or 0
-	return datetime.datetime(res[0], res[1], res[2], res[3], res[4], res[5])
+	return int(mres.group(1))
 
 def _valid_XML_char_ordinal(i):
 	## As for the XML specification, valid chars must be in the range of
@@ -167,11 +164,12 @@ def parse_wayback(siteurl):
 	# Parse the earliest snapshot timestamp
 	sketchinfo = position_div.find("./{*}div[@id='wbSearch']/{*}div[@id='form']/{*}div[@id='wbMeta']/{*}p[@class='wbThis']")
 	first_url = sketchinfo.getchildren()[-1].attrib['href']
-	first_year = _extract_wayback_time(first_url).year
+	first_year = _extract_wayback_year(first_url)
 
 	sitedb = SiteDB(siteurl)	# new sitedb
 	for year in range(first_year, datetime.datetime.now().year+1):
-		time.sleep(random.randint(1,3))	# Be polite to the host server
+		# Be polite to the host server
+		time.sleep(random.randint(1,3))
 		# Note: the timestamp in search url indicates the time scale of query:
 		# E.g., wildcard * matches all of the items in specific year.
 		# If only * is supported, the results of latest year are returned.
@@ -180,7 +178,7 @@ def parse_wayback(siteurl):
 		wayback_url_year = "%s%d0601000000*/%s" % (WAYBACK_SEARCH_PREFIX, year, siteurl)
 		for item in _parse_wayback_page(wayback_url_year):
 			try:
-				wayback_year =  _extract_wayback_time(item).year
+				wayback_year =  _extract_wayback_year(item)
 			except AttributeError:
 				logging.error("Invalid timestap of wayback url: %s" % item)
 				continue
@@ -192,4 +190,4 @@ def parse_wayback(siteurl):
 	return sitedb
 
 if __name__ == '__main__':
-	print _sanitize_name('attracta.com/user/?v5=##&')
+	print _extract_wayback_time('http://web.archive.org/web/20010430154448/http://www.llbean.com')
