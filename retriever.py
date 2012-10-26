@@ -28,6 +28,8 @@ import os
 import os.path
 import random
 import sys
+import html5lib
+from html5lib import treebuilders
 
 RE_TIMESTAMP_SIMPLE = r"\/([1-2]\d{3}\d*)"
 THIS_DESCRIPTION = """
@@ -116,7 +118,11 @@ def _savepage(url, savefile):
 	try:
 		f = urllib2.urlopen(url)
 	except urllib2.URLError, reason:
-		logging.error("%s: %s" % (url, reason))
+		## Multiple reasons may lead to the failure:
+		## Server is down,
+		## The wayback didn't archive this page
+		## Connection is block by the third person
+		logging.error("Failed to open URL: %s: %s" % (reason, url))
 		return None
 	fc = f.read()
 	## check content
@@ -124,10 +130,16 @@ def _savepage(url, savefile):
 	pattern = re.compile(RE_WRONG_CONTENT)
 	mp = re.search(pattern, fc)
 	if mp != None:
-		logging.error("%s: %s" % (url, mp.group(1)))
-		return None
+		logging.warning("%s: %s" % (mp.group(1), url))
+		parser = html5lib.HTMLParser(tree = treebuilders.getTreeBuilder("lxml"))
+		html_doc = parser.parse(fc)
+		html_body = html_doc.find("./{*}body")
+		div_error = html_body.find(".//{*}div[@id='error']")
+		redir_a = div_error.find("./{*}p[@class='impatient']/{*}a")
+		redir_url = redir_a.get('href')
+		return _savepage(redir_url, savefile)
 	else:
-		open(savefile, 'wb').write(f.read())
+		open(savefile, 'wb').write(fc)
 		return os.path.abspath(savefile)
 
 def retriever_smart(inputfile):

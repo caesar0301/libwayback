@@ -6,11 +6,17 @@ __author__ = 'xiamingc'
 from distutils.core import setup  
 import py2exe  
 import sys
+import shutil
+import os
 
 # If run without args, build executables, in quiet mode.
 if len(sys.argv) == 1:
     sys.argv.append("py2exe")
     sys.argv.append("-q")
+
+print os.getcwd()
+os.chdir(os.path.split(sys.argv[0])[0])
+print os.getcwd()
 
 INCLUDES = ['lxml._elementpath', 'gzip']
 DATA_FILES = ["dll/MSVCR90.dll", "dll/gdiplus.dll"]
@@ -32,5 +38,5 @@ setup(name = "archive crawler",
       data_files = DATA_FILES,
       zipfile=None,
       options = {'py2exe': options},
-      console = ['crawler.py']
+      console = ['crawler.py', 'retriever.py']
       )
