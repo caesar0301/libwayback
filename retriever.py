@@ -115,6 +115,7 @@ def _savepage(url, savefile):
 	Return the abstract path of savefile if succeed; 
 	Otherwise, return None.
 	"""
+	url = url.rstrip('\r \n')
 	try:
 		f = urllib2.urlopen(url)
 	except urllib2.URLError, reason:
@@ -122,7 +123,7 @@ def _savepage(url, savefile):
 		## Server is down,
 		## The wayback didn't archive this page
 		## Connection is block by the third person
-		logging.error("Failed to open URL: %s: %s" % (reason, url))
+		logging.debug("Failed to open URL: %s: %s" % (reason, url))
 		return None
 	fc = f.read()
 	## check content
@@ -142,7 +143,8 @@ def _savepage(url, savefile):
 		open(savefile, 'wb').write(fc)
 		return os.path.abspath(savefile)
 
-def retriever_smart(inputfile):
+def retriever_smart(inputfile, years = None, days = None):
+	logging.info("Start downloading URLs of %s" % inputfile)
 	all_urls = []
 	for line in open(inputfile, 'rb'):
 		line = line.rstrip('\n')
@@ -154,57 +156,73 @@ def retriever_smart(inputfile):
 			continue
 		all_urls.append((timestamp, line))
 	all_urls.sort(lambda x,y:cmp(x[0],y[0]), None, False)
+	## Process the time-scale limitations
+	if years != None:
+		left_urls = [url for url in all_urls if url[0].year in years ]
+	else:
+		left_urls = all_urls
 
 	inputfilename = os.path.split(inputfile)[1]
 	resultdir = _genoutdir()	# output lies in the same folder with this program
 	aday = []
-	k = 1
-	while k <= len(all_urls):
-		url = all_urls[k-1]
+	k = 1 	## url counter
+	j = 0	## day counter
+	n = 0	## valid day counter
+	while k <= len(left_urls):
+		url = left_urls[k-1]
 		if len(aday) == 0 or url[0].day == aday[0][0].day:
 			aday.append(url)
-		if k == len(all_urls) or all_urls[k][0].day != aday[0][0].day:
-			# process the day
-			## We only retrive the earlies and latest valid web pages in a day
-			l = len(aday)
-			lf = math.floor(l)
-			le = math.ceil(l)
-			first = None
-			i = 1
-			while i <= lf:
-				time.sleep(random.randint(1,3))
+		if k == len(left_urls) or left_urls[k][0].day != aday[0][0].day:
+			## process the day to featch the earlies valid web page
+			print("Parsing the day: %s/%s/%s" % (aday[0][0].month, aday[0][0].day, aday[0][0].year))
+			j += 1
+			dl = len(aday)	## total url counter for a day
+			i = 1 	## url counter for a day
+			while i <= dl:
+				time.sleep(0.5)
 				outputfile = _genoutname(resultdir, inputfilename, _extimestr(aday[i-1][1]))
 				status = _savepage(aday[i-1][1], outputfile)
 				if status == None:
 					i += 1
 					continue
 				else:
-					break
-			j = l
-			while j >= le:
-				if i == j:
-					break
-				time.sleep(random.randint(1,3))
-				outputfile = _genoutname(resultdir, inputfilename, _extimestr(aday[j-1][1]))
-				status = _savepage(aday[j-1][1], outputfile)
-				if status == None:
-					j -= 1
-					continue
-				else:
+					n += 1
 					break
 			# start next day
 			aday = []
 		k += 1
+	logging.info("Finish downloading URLs of %s: %d/%d valid days processed" % (inputfile, n, j))
 
 parser = argparse.ArgumentParser(description=THIS_DESCRIPTION)
-parser.add_argument("urllist", type=str, help="File containing wayback URLs output by the crawler.")
+parser.add_argument("-y", dest='yearscale', type=str, help="Year scale to retrieve, e.g. '1999', '1999-2003' or '1999,2003' (single quotation marks excluded)")
+#parser.add_argument("-d", dest='timeslot', default=1, type=int, help="Integer value to indicate download granularity on basis of one day.")
+parser.add_argument("URLFILE", type=str, help="File containing wayback URLs output by the crawler.")
 args = parser.parse_args()
-inputfile = args.urllist
+#days = args.timeslot
+inputfile = args.URLFILE
+yearstr = args.yearscale
+
+if yearstr != None:
+	years = []
+	for i in yearstr.split(','):
+		points = [int(j) for j in i.split('-')]
+		if len(points) == 1:
+			years.append(int(i))
+		elif len(points) > 2:
+			print("Wrong year scale. -h for help")
+			exit(-1)
+		else:
+			if points[0] <= points[1]:
+				years += range(points[0], points[1]+1)
+			else:
+				years += range(points[1], points[0]+1)
+else:
+	years = None
+
 ## logging
 logging.basicConfig(
 	format='%(asctime)s - %(name)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s',
 	filename=os.path.join(_genprogdir(), 'retriever.log'), filemode='a', level=logging.DEBUG)
 
-print(THIS_DESCRIPTION)
-print("Processing %s" % inputfile)
-retriever_smart(inputfile)
+print("{0}: processing {1}".format(str(datetime.datetime.now()), inputfile))
+retriever_smart(inputfile, years)

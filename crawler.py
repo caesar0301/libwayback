@@ -24,8 +24,7 @@ LOG_FILE = 'crawler.log'
 
 __version__ = """Archive_crawler - Version 0.1
 Program to parse historical urls of web page from archive.org.
-Copyright (C) 2012
-xiamingc, SJTU - chenxm35@gmail.com
+Copyright (c) 2012 xiamingc, SJTU - chenxm35@gmail.com
 This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
 This is free software, and you are welcome to redistribute it
 under certain conditions; type `show c' for details.
