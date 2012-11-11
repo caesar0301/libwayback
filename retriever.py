@@ -135,7 +135,11 @@ def _savepage(url, savefile):
 		logging.error("Failed to open URL: %s: %s" % (reason, url))
 		return None
 	httplib.HTTPResponse.read = _patch_http_response_read(httplib.HTTPResponse.read)
-	fc = f.read()
+	try:
+		fc = f.read()
+	except httplib.IncompleteRead:
+		logging.error("IncompleteRead Error occured: %s" % url)
+		return None
 	## check content
 	RE_WRONG_CONTENT = r'(Got an HTTP \d* response at crawl time)'
 	pattern = re.compile(RE_WRONG_CONTENT)
