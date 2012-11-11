@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import argparse
 import os
 import sys
+import datetime
 from subprocess import *
 
 parser = argparse.ArgumentParser(description='')
@@ -46,6 +47,5 @@ for root, dirs, files in os.walk(urlfolder):
 
 for urlfile in all_files:
 	cmd = cmdstr.format(retriever_exe, urlfile)
-	print cmd
-	for line in Popen(cmd, shell = True, stdout = PIPE).stdout:
-		print line.strip('\r \n')
+	print datetime.datetime.now(), ":", cmd
+	Popen(cmd, shell = True, stdout = PIPE).communicate()

@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import argparse
+import httplib
 import urllib2
 import re
 import datetime
@@ -109,6 +110,14 @@ def _genoutname(outputfolder, inputfilename, timestr):
 		os.makedirs(newdir)
 	outputfilename = "%s_%s.txt" % (name, timestr)
 	return os.path.join(newdir, outputfilename)
+
+def _patch_http_response_read(func):
+    def inner(*args):
+        try:
+            return func(*args)
+        except httplib.IncompleteRead, e:
+            return e.partial
+    return inner
 	
 def _savepage(url, savefile):
 	"""
@@ -123,8 +132,9 @@ def _savepage(url, savefile):
 		## Server is down,
 		## The wayback didn't archive this page
 		## Connection is block by the third person
-		logging.debug("Failed to open URL: %s: %s" % (reason, url))
+		logging.error("Failed to open URL: %s: %s" % (reason, url))
 		return None
+	httplib.HTTPResponse.read = _patch_http_response_read(httplib.HTTPResponse.read)
 	fc = f.read()
 	## check content
 	RE_WRONG_CONTENT = r'(Got an HTTP \d* response at crawl time)'
