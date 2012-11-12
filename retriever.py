@@ -134,11 +134,10 @@ def _savepage(url, savefile):
 		## Connection is block by the third person
 		logging.error("Failed to open URL: %s: %s" % (reason, url))
 		return None
-	httplib.HTTPResponse.read = _patch_http_response_read(httplib.HTTPResponse.read)
 	try:
 		fc = f.read()
-	except httplib.IncompleteRead:
-		logging.error("IncompleteRead Error occured: %s" % url)
+	except:
+		logging.error("Unknown error: %s" % url)
 		return None
 	## check content
 	RE_WRONG_CONTENT = r'(Got an HTTP \d* response at crawl time)'
@@ -215,6 +214,9 @@ args = parser.parse_args()
 #days = args.timeslot
 inputfile = args.URLFILE
 yearstr = args.yearscale
+
+# Patch HTTPResponse.read to avoid IncompleteRead exception
+httplib.HTTPResponse.read = _patch_http_response_read(httplib.HTTPResponse.read)
 
 if yearstr != None:
 	years = []
