@@ -209,9 +209,11 @@ def retriever_smart(inputfile, years = None, days = None):
 parser = argparse.ArgumentParser(description=THIS_DESCRIPTION)
 parser.add_argument("-y", dest='yearscale', type=str, help="Year scale to retrieve, e.g. '1999', '1999-2003' or '1999,2003' (single quotation marks excluded)")
 #parser.add_argument("-d", dest='timeslot', default=1, type=int, help="Integer value to indicate download granularity on basis of one day.")
+parser.add_argument("--log", dest="loglevel", default="INFO", type=str, help="Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL")
 parser.add_argument("URLFILE", type=str, help="File containing wayback URLs output by the crawler.")
 args = parser.parse_args()
 #days = args.timeslot
+loglevel = args.loglevel
 inputfile = args.URLFILE
 yearstr = args.yearscale
 
@@ -236,9 +238,12 @@ else:
 	years = None
 
 ## logging
+numeric_level = getattr(logging, loglevel.upper(), None)
+if not isinstance(numeric_level, int):
+    raise ValueError('Invalid log level: %s' % loglevel)
 logging.basicConfig(
 	format='%(asctime)s - %(name)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s',
-	filename=os.path.join(_genprogdir(), 'retriever.log'), filemode='a', level=logging.DEBUG)
+	filename=os.path.join(_genprogdir(), 'retriever.log'), filemode='a', level=numeric_level)
 
 print("{0}: processing {1}".format(str(datetime.datetime.now()), inputfile))
 retriever_smart(inputfile, years)

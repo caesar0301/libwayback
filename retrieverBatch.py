@@ -30,10 +30,10 @@ urlfolder = args.URLFOLDER
 argv = sys.argv
 if argv[0].rsplit('.', 1)[1] == 'py':
 	retriever_exe = "./retriever.py"
-	cmdstr = "python {0} {1}"
+	cmdstr = "python {0} --log ERROR {1}"
 else:
 	retriever_exe = r".\\retriever.exe"
-	cmdstr = "{0} {1}"
+	cmdstr = "{0} --log ERROR {1}"
 
 assert os.path.exists(retriever_exe),"%s not found" % retriever_exe
 
