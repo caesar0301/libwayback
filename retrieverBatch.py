@@ -38,12 +38,19 @@ args = parser.parse_args()
 loglevel = args.loglevel
 urlfolder = args.URLFOLDER
 
+print sys.platform
+
 argv = sys.argv
-if argv[0].rsplit('.', 1)[1] == 'py':
+(name, suffix) = argv[0].rsplit('.', 1)
+if suffix == 'py':
 	retriever_exe = "./retriever.py"
 	cmdstr = "python %s" % retriever_exe
 else:
-	retriever_exe = r".\\retriever.exe"
+	# suffix == 'exe'
+	if name.rsplit('_', 1)[1] == "":
+		retriever_exe = ".\\retriever.exe"
+	else:
+		retriever_exe = ".\\retriever_%s.exe" % name.rsplit('_', 1)[1]
 	cmdstr = "%s" % retriever_exe
 
 assert os.path.exists(retriever_exe),"%s not found" % retriever_exe
