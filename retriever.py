@@ -207,18 +207,16 @@ def retriever_smart(inputfile, years = None, days = None):
 	logging.info("Finish downloading URLs of %s: %d/%d valid days processed" % (inputfile, n, j))
 
 parser = argparse.ArgumentParser(description=THIS_DESCRIPTION)
-parser.add_argument("-y", dest='yearscale', type=str, help="Year scale to retrieve, e.g. '1999', '1999-2003' or '1999,2003' (single quotation marks excluded)")
-#parser.add_argument("-d", dest='timeslot', default=1, type=int, help="Integer value to indicate download granularity on basis of one day.")
-parser.add_argument("--log", dest="loglevel", default="INFO", type=str, help="Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL")
+parser.add_argument("-y", dest='yearscale', type=str, help="Year scale to retrieve, e.g. '1999', '1999-2003' or '1999,2003' (without quotation marks)")
+parser.add_argument("-p", dest='patched', default=1, type=int, help="If httplib.HTTPResponse.read is patched (default 1) to avoid IncompleteRead error.")
+parser.add_argument("-log", dest="loglevel", default="DEBUG", type=str, help="Log level: DEBUG(default), INFO, WARNING, ERROR, CRITICAL")
 parser.add_argument("URLFILE", type=str, help="File containing wayback URLs output by the crawler.")
 args = parser.parse_args()
 #days = args.timeslot
 loglevel = args.loglevel
+patched = args.patched
 inputfile = args.URLFILE
 yearstr = args.yearscale
-
-# Patch HTTPResponse.read to avoid IncompleteRead exception
-httplib.HTTPResponse.read = _patch_http_response_read(httplib.HTTPResponse.read)
 
 if yearstr != None:
 	years = []
@@ -244,6 +242,11 @@ if not isinstance(numeric_level, int):
 logging.basicConfig(
 	format='%(asctime)s - %(name)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s',
 	filename=os.path.join(_genprogdir(), 'retriever.log'), filemode='a', level=numeric_level)
+
+if patched == 1:
+	logging.debug("httplib.HTTPResponse.read patched.")
+	# Patch HTTPResponse.read to avoid IncompleteRead exception
+	httplib.HTTPResponse.read = _patch_http_response_read(httplib.HTTPResponse.read)
 
 print("{0}: processing {1}".format(str(datetime.datetime.now()), inputfile))
 retriever_smart(inputfile, years)

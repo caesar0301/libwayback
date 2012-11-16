@@ -20,20 +20,31 @@ import argparse
 import os
 import sys
 import datetime
+import httplib
 from subprocess import *
 
+def _patch_http_response_read(func):
+    def inner(*args):
+        try:
+            return func(*args)
+        except httplib.IncompleteRead, e:
+            return e.partial
+    return inner
+
 parser = argparse.ArgumentParser(description='')
+parser.add_argument("-log", dest="loglevel", default="DEBUG", type=str, help="Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL")
 parser.add_argument('URLFOLDER', type=str, help= '')
 args = parser.parse_args()
+loglevel = args.loglevel
 urlfolder = args.URLFOLDER
 
 argv = sys.argv
 if argv[0].rsplit('.', 1)[1] == 'py':
 	retriever_exe = "./retriever.py"
-	cmdstr = "python {0} --log ERROR {1}"
+	cmdstr = "python %s" % retriever_exe
 else:
 	retriever_exe = r".\\retriever.exe"
-	cmdstr = "{0} --log ERROR {1}"
+	cmdstr = "%s" % retriever_exe
 
 assert os.path.exists(retriever_exe),"%s not found" % retriever_exe
 
@@ -45,7 +56,11 @@ for root, dirs, files in os.walk(urlfolder):
 			continue
 		all_files.append(os.path.join(root, file))
 
+print("httplib.HTTPResponse.read patched.")
+# Patch HTTPResponse.read to avoid IncompleteRead exception
+httplib.HTTPResponse.read = _patch_http_response_read(httplib.HTTPResponse.read)
+
 for urlfile in all_files:
-	cmd = cmdstr.format(retriever_exe, urlfile)
+	cmd = cmdstr + " -p %d -log %s %s" % (0, loglevel.upper(), urlfile)
 	print datetime.datetime.now(), ":", cmd
 	Popen(cmd, shell = True, stdout = PIPE).communicate()
