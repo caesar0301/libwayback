@@ -110,14 +110,6 @@ def _genoutname(outputfolder, inputfilename, timestr):
 		os.makedirs(newdir)
 	outputfilename = "%s_%s.txt" % (name, timestr)
 	return os.path.join(newdir, outputfilename)
-
-def _patch_http_response_read(func):
-    def inner(*args):
-        try:
-            return func(*args)
-        except httplib.IncompleteRead, e:
-            return e.partial
-    return inner
 	
 def _savepage(url, savefile):
 	"""
@@ -136,8 +128,8 @@ def _savepage(url, savefile):
 		return None
 	try:
 		fc = f.read()
-	except:
-		logging.error("Unknown error: %s" % url)
+	except httplib.IncompleteRead:
+		logging.error("IncompleteRea error: %s" % url)
 		return None
 	## check content
 	RE_WRONG_CONTENT = r'(Got an HTTP \d* response at crawl time)'
@@ -206,15 +198,22 @@ def retriever_smart(inputfile, years = None, days = None):
 		k += 1
 	logging.info("Finish downloading URLs of %s: %d/%d valid days processed" % (inputfile, n, j))
 
+# def _patch_http_response_read(func):
+#     def inner(*args):
+#         try:
+#             return func(*args)
+#         except httplib.IncompleteRead, e:
+#             return e.partial
+#     return inner
+    
 parser = argparse.ArgumentParser(description=THIS_DESCRIPTION)
 parser.add_argument("-y", dest='yearscale', type=str, help="Year scale to retrieve, e.g. '1999', '1999-2003' or '1999,2003' (without quotation marks)")
-parser.add_argument("-p", dest='patched', default=1, type=int, help="If httplib.HTTPResponse.read is patched (default 1) to avoid IncompleteRead error.")
+#parser.add_argument("-p", dest='patched', default=1, type=int, help="If httplib.HTTPResponse.read is patched (default 1) to avoid IncompleteRead error.")
 parser.add_argument("-log", dest="loglevel", default="DEBUG", type=str, help="Log level: DEBUG(default), INFO, WARNING, ERROR, CRITICAL")
 parser.add_argument("URLFILE", type=str, help="File containing wayback URLs output by the crawler.")
 args = parser.parse_args()
-#days = args.timeslot
 loglevel = args.loglevel
-patched = args.patched
+#patched = args.patched
 inputfile = args.URLFILE
 yearstr = args.yearscale
 
@@ -243,10 +242,10 @@ logging.basicConfig(
 	format='%(asctime)s - %(name)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s',
 	filename=os.path.join(_genprogdir(), 'retriever.log'), filemode='a', level=numeric_level)
 
-if patched == 1:
-	logging.debug("httplib.HTTPResponse.read patched.")
-	# Patch HTTPResponse.read to avoid IncompleteRead exception
-	httplib.HTTPResponse.read = _patch_http_response_read(httplib.HTTPResponse.read)
+# if patched == 1:
+# 	logging.debug("httplib.HTTPResponse.read patched.")
+# 	# Patch HTTPResponse.read to avoid IncompleteRead exception
+# 	httplib.HTTPResponse.read = _patch_http_response_read(httplib.HTTPResponse.read)
 
 print("{0}: processing {1}".format(str(datetime.datetime.now()), inputfile))
 retriever_smart(inputfile, years)
