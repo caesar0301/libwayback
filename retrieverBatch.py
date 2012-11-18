@@ -50,6 +50,6 @@ for root, dirs, files in os.walk(urlfolder):
 		all_files.append(os.path.join(root, file))
 
 for urlfile in all_files:
-	cmd = cmdstr + " -log %s %s" % (0, loglevel.upper(), urlfile)
+	cmd = cmdstr + " -log %s %s" % (loglevel.upper(), urlfile)
 	print datetime.datetime.now(), ":", cmd
 	Popen(cmd, shell = True, stdout = PIPE).communicate()
