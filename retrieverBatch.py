@@ -36,11 +36,7 @@ if suffix == 'py':
 	retriever_exe = "./retriever.py"
 	cmdstr = "python %s" % retriever_exe
 else:
-	# suffix == 'exe'
-	if name.rsplit('_', 1)[1] == "":
-		retriever_exe = ".\\retriever.exe"
-	else:
-		retriever_exe = ".\\retriever_%s.exe" % name.rsplit('_', 1)[1]
+	retriever_exe = ".\\retriever.exe"
 	cmdstr = "%s" % retriever_exe
 
 assert os.path.exists(retriever_exe),"%s not found" % retriever_exe
