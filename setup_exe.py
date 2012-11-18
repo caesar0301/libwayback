@@ -15,7 +15,7 @@ if len(sys.argv) == 1:
     sys.argv.append("py2exe")
     sys.argv.append("-q")
 
-SCRIPTS = ['crawler.py', 'retriever.py', 'retrieverBatch.py']
+SCRIPTS = ['crawler.py', 'retriever.py', 'batch.py']
 INCLUDES = ['lxml._elementpath', 'gzip']
 DATA_FILES_86 = []
 DATA_FILES_64 = ["dll/msvcr90_x64.dll", "dll/gdiplus_x64.dll"]
