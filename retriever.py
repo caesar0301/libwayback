@@ -126,11 +126,16 @@ def _savepage(url, savefile):
 		## Connection is block by the third person
 		logging.error("Failed to open URL: %s: %s" % (reason, url))
 		return None
+		
 	try:
 		fc = f.read()
 	except httplib.IncompleteRead:
-		logging.error("IncompleteRea error: %s" % url)
+		logging.error("IncompleteRead error: %s" % url)
 		return None
+	except:
+		logging.error("Read content error: %s" % url)
+		return None
+
 	## check content
 	RE_WRONG_CONTENT = r'(Got an HTTP \d* response at crawl time)'
 	pattern = re.compile(RE_WRONG_CONTENT)
@@ -143,7 +148,14 @@ def _savepage(url, savefile):
 		div_error = html_body.find(".//{*}div[@id='error']")
 		redir_a = div_error.find("./{*}p[@class='impatient']/{*}a")
 		redir_url = redir_a.get('href')
-		return _savepage(redir_url, savefile)
+		try:
+			return _savepage(redir_url, savefile)
+		except RuntimeError, detail:
+			logging.error("RuntimeError({0}): {1}".format(detail.errno, detail.strerror))
+			return None
+		except:
+			logging.error("Savepage error: %s" % url)
+			return None
 	else:
 		open(savefile, 'wb').write(fc)
 		return os.path.abspath(savefile)
@@ -196,24 +208,25 @@ def retriever_smart(inputfile, years = None, days = None):
 			# start next day
 			aday = []
 		k += 1
-	logging.info("Finish downloading URLs of %s: %d/%d valid days processed" % (inputfile, n, j))
+	logging.info("Finish downloading.")
+	logging.info("File %s: %d/%d valid days processed" % (inputfile, n, j))
 
-# def _patch_http_response_read(func):
-#     def inner(*args):
-#         try:
-#             return func(*args)
-#         except httplib.IncompleteRead, e:
-#             return e.partial
-#     return inner
+def _patch_http_response_read(func):
+    def inner(*args):
+        try:
+            return func(*args)
+        except httplib.IncompleteRead, e:
+            return e.partial
+    return inner
     
 parser = argparse.ArgumentParser(description=THIS_DESCRIPTION)
 parser.add_argument("-y", dest='yearscale', type=str, help="Year scale to retrieve, e.g. '1999', '1999-2003' or '1999,2003' (without quotation marks)")
-#parser.add_argument("-p", dest='patched', default=1, type=int, help="If httplib.HTTPResponse.read is patched (default 1) to avoid IncompleteRead error.")
+parser.add_argument("-p", dest='patched', default=1, type=int, help="If httplib.HTTPResponse.read is patched (default 1) to avoid IncompleteRead error.")
 parser.add_argument("-log", dest="loglevel", default="DEBUG", type=str, help="Log level: DEBUG(default), INFO, WARNING, ERROR, CRITICAL")
 parser.add_argument("URLFILE", type=str, help="File containing wayback URLs output by the crawler.")
 args = parser.parse_args()
 loglevel = args.loglevel
-#patched = args.patched
+patched = args.patched
 inputfile = args.URLFILE
 yearstr = args.yearscale
 
@@ -242,10 +255,10 @@ logging.basicConfig(
 	format='%(asctime)s - %(name)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s',
 	filename=os.path.join(_genprogdir(), 'retriever.log'), filemode='a', level=numeric_level)
 
-# if patched == 1:
-# 	logging.debug("httplib.HTTPResponse.read patched.")
-# 	# Patch HTTPResponse.read to avoid IncompleteRead exception
-# 	httplib.HTTPResponse.read = _patch_http_response_read(httplib.HTTPResponse.read)
+if patched == 1:
+	logging.debug("httplib.HTTPResponse.read patched.")
+	# Patch HTTPResponse.read to avoid IncompleteRead exception
+	httplib.HTTPResponse.read = _patch_http_response_read(httplib.HTTPResponse.read)
 
 print("{0}: processing {1}".format(str(datetime.datetime.now()), inputfile))
 retriever_smart(inputfile, years)
