@@ -49,6 +49,8 @@ for root, dirs, files in os.walk(urlfolder):
 			continue
 		all_files.append(os.path.join(root, file))
 
+all_files.sort()
+
 for urlfile in all_files:
 	cmd = cmdstr + " -log %s %s" % (loglevel.upper(), urlfile)
 	print datetime.datetime.now(), ":", cmd
