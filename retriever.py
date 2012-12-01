@@ -124,16 +124,19 @@ def _savepage(url, savefile):
 		## Server is down,
 		## The wayback didn't archive this page
 		## Connection is block by the third person
-		logging.error("Failed to open URL: %s: %s" % (reason, url))
+		logging.error("Open page error: %s: %s" % (reason, url))
+		return None
+	except:
+		logging.error("Open page error: null: %s" % url)
 		return None
 		
 	try:
 		fc = f.read()
 	except httplib.IncompleteRead:
-		logging.error("IncompleteRead error: %s" % url)
+		logging.error("Read content error: Incompleted content: %s" % url)
 		return None
 	except:
-		logging.error("Read content error: %s" % url)
+		logging.error("Read content error: null: %s" % url)
 		return None
 
 	## check content
@@ -151,10 +154,10 @@ def _savepage(url, savefile):
 		try:
 			return _savepage(redir_url, savefile)
 		except RuntimeError, detail:
-			logging.error("RuntimeError({0}): {1}".format(detail.errno, detail.strerror))
+			logging.error("Save page error: [{0}]{1}: {2}".format(detail.errno, detail.strerror, url))
 			return None
 		except:
-			logging.error("Savepage error: %s" % url)
+			logging.error("Save page error: null: %s" % url)
 			return None
 	else:
 		open(savefile, 'wb').write(fc)
