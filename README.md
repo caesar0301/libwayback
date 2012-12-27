@@ -18,8 +18,11 @@ Programs
 ------------
 
 `crawler.py` -- to extract the URLs of websites from Internet Archive for content download later.
+
 `retriever.py` -- to downlad the page content with the URLs output by `crawler.py`
+
 `batch.py` -- to run the `retriever.py` in a batch mode across multiple crawler generated files
+
 `siteInfoCrawler.py` -- unfinished; Originally aimed to fetch the history statistics about one site from Alexa.com.
 However, this service (http://www.alexa.com/faqs/?p=41) needs to be paid and I make a break about this program.
 Someone who is interested in this can contact me to join the project.
