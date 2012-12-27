@@ -180,7 +180,7 @@ def parse_wayback(siteurl):
 			try:
 				wayback_year =  _extract_wayback_year(item)
 			except AttributeError:
-				logging.error("Invalid timestap of wayback url: %s" % item)
+				logging.error("Invalid timestamp of wayback url: %s" % item)
 				continue
 			if year == wayback_year:
 				# To exclude duplicated items that don't match the year

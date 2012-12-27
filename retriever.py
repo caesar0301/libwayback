@@ -133,7 +133,7 @@ def _savepage(url, savefile):
 	try:
 		fc = f.read()
 	except httplib.IncompleteRead:
-		logging.error("Read content error: Incompleted content: %s" % url)
+		logging.error("Read content error: uncompleted content: %s" % url)
 		return None
 	except:
 		logging.error("Read content error: null: %s" % url)
@@ -154,10 +154,10 @@ def _savepage(url, savefile):
 		try:
 			return _savepage(redir_url, savefile)
 		except RuntimeError, detail:
-			logging.error("Save page error: [{0}]{1}: {2}".format(detail.errno, detail.strerror, url))
+			logging.error("Save redirected page error: [{0}]{1}: {2}".format(detail.errno, detail.strerror, url))
 			return None
 		except:
-			logging.error("Save page error: null: %s" % url)
+			logging.error("Save redirected page error: null: %s" % url)
 			return None
 	else:
 		open(savefile, 'wb').write(fc)
