@@ -1,9 +1,11 @@
 Archiver_crawler
 ============
-A collection of tools to parse Wayback Machine of [Internet Archive] (www.archive.org) to get the historical content of web page.
-Only the original content of HTML (or other format) content of the web page is downloaded, without the referred objects.
+A library for parsing Wayback Machine of [Internet Archive] (www.archive.org) to get the historical content of web page, for research purpose only.
+
+Only the original content of HTML file of the web page is downloaded, without the embedded web objects.
 
 By xiamingc,SJTU - chenxm35@gmail.com
+
 
 Requirements
 ------------
@@ -14,84 +16,90 @@ lxml 2.3+
 
 html5lib 0.95+
 
+
 Programs
 ------------
 
-`crawler.py` -- to extract the URLs of websites from Internet Archive for content download later.
+`wayback_crawler` -- to extract the URLs of websites from Internet Archive for content download later.
 
-`retriever.py` -- to downlad the page content with the URLs output by `crawler.py`
+`wayback_retriever` -- to downlad the page content with the URLs output of `wayback_crawler`
 
-`batch.py` -- to run the `retriever.py` in a batch mode across multiple crawler generated files
-
-`siteInfoCrawler.py` -- unfinished; Originally aimed to fetch the history statistics about one site from Alexa.com.
-However, this service (http://www.alexa.com/faqs/?p=41) needs to be paid and I make a break about this program.
-Someone who is interested in this can contact me to join the project.
+`libwayback` -- the underlying library support crawler and retriever programs.
 
 
-Usage of Crawler
+
+Usage of wayback_crawler
 ------------
 
-If you have python and required packages installed, you can run with python script:
+If you have python and required packages installed, you can run as python script:
 
-    python crawler.py urlfile
-
-
-In windows (win64) environment without python installed, you can run the command below:
-
-    dist/crawler.exe urlfile
+    python wayback_crawler.py [-l log_level] urlfile
 
 
-To build other windows versions of crawler, you can use setup script:
 
-    python setup_exe.py
-    
-You may need to put matched version of "gdiplus.dll" and "msgcr90.dll" in the foder dll.
-
-The generated distribution locates in "dist" folder, and the crawled historical urls locates in "results".
-
-Usage of Retriever
+Usage of wayback_retriever
 ------------
 
-The same requirements with crawler, with python installed, you can run `retriever` with:
+The `wayback_retriever` works on the output of `wayback_crawler`. With a specific file, you can run retriever like:
 
-    python retriever.py inputfile
+    python wayback_retriever.py <specific_output_file_of_wayback_crawler>
 
-where the inputfile is an individual file output by crawler.
+where the input is an individual file output by crawler.
 
-The download pages will locates in folder `retriever_results` created in the program root folder; 
-and a subfolder will be created for each inputfile with the same name.
+The download pages will locates in folder `retriever_results` located in current working place; 
 
-Usage of Libcrawler
+
+
+Usage of libwayback
 ------------
 
-Main interface for `crawler.py` for parsing the historical urls of a site:
+This library provides basic functions for crawling Internet Archive. It has the simple structures like:
 
-    for a url:
-        generate a SiteDB object by parse_wayback(url)
-        call sitedb_obj.dump(stored folder name) to dump the modified version of web page content by Achieve.org
-        call sitedb_obj.dump_live(stored folder name) to dump the original version of web page content by Achieve.org
-	
-For more information about the difference about the modified and original versions, please refer to:
-http://faq.web.archive.org/page-without-wayback-code/
+libwayback
+|____WaybackCrawler
+|____WaybackRetriever
+
+If you are willing to using libwayback in your project, it's easy to integrate:
+
+    from libwayback import WaybackCrawler, WaybackRetriever
+
+    crawler = WaybackCrawler("www.sjtu.edu.cn")
+    crawler.parse(live=False)
+
+    # The `results` of crawler instance contains a dict data structure with 
+    # a "year" number being the key and a list of page addresses being the value.
+
+    ret = crawler.results
+
+    # Based on the result of crawler, ie a specific page address, you can use 
+    # retriever to download and save it in yor file system:
+
+    retriever = WaybackRetriever()
+
+    for year in ret:
+        for url in ret[year]:
+            retriever.save_page(url, "saved_file")
+
+NOTE:
+
+* The `live` option of `parse()` is responsible to parsing the live version of a page. 
+For more about the difference about the modified and original versions, please refer to:
+http://faq.web.archive.org/page-without-wayback-code/ .
 
 
-Log Information Above ERROR
+
+About logs
 ------------
 
-Note: the frequencies given by my running over ~180K logging information of my project.
-
-libcrawler.py:
+libwayback:
 
     ERROR: "Invalid timestamp of wayback url: %s" 
     Meaning: which means the regex expression can't match the year number from the historical URLs.
     Solution: check the URL manually and find the error reason.
     Frequency: ~ 0%
-    
-crawler.py:
 
-    No these logging information
     
-retriever.py:
+wayback_retriever:
 
     ERROR: "Failed to extract the time string. The url must in the format like: http://web.archive.org/web/19990117032727/google.com/"
     Meaning: which means the regex expression can't match the year number from the historical URLs.

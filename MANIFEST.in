@@ -1,0 +1,7 @@
+include README.md
+include LICENSE
+include MANIFEST.in
+include setup.py
+recursive-include apps *.txt
+recursive-include apps *.py
+recursive-include libwayback *.py
