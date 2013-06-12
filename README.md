@@ -50,7 +50,7 @@ The `wayback_retriever` works on the output of `wayback_crawler`. With a specifi
 
 where the input is an individual file output by crawler.
 
-The download pages will locates in folder `retriever_results` located in current working place; 
+The download pages will locate in folder `retriever_results` in current working place; 
 
 
 
