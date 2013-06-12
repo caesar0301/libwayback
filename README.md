@@ -1,6 +1,10 @@
 Archiver_crawler
 ============
-A library for parsing Wayback Machine of [Internet Archive] (www.archive.org) to get the historical content of web page, for research purpose only.
+
+![wayback machine](http://archive.org/images/wayback_logo-sm.gif)
+
+
+A library for parsing Wayback Machine of [Internet Archive] (http://www.archive.org) to get the historical content of web page, for research purpose only.
 
 Only the original content of HTML file of the web page is downloaded, without the embedded web objects.
 
@@ -10,11 +14,11 @@ By xiamingc,SJTU - chenxm35@gmail.com
 Requirements
 ------------
 
-Python 2.6+ (<3)
+[Python 2.6+ (<3)] (http://www.python.org/)
 
-lxml 2.3+
+[lxml 2.3+] (http://lxml.de/)
 
-html5lib 0.95+
+[html5lib 0.95+] (https://github.com/html5lib)
 
 
 Programs
@@ -55,9 +59,9 @@ Usage of libwayback
 
 This library provides basic functions for crawling Internet Archive. It has the simple structures like:
 
-libwayback
-|____WaybackCrawler
-|____WaybackRetriever
+    libwayback
+    |____WaybackCrawler
+    |____WaybackRetriever
 
 If you are willing to using libwayback in your project, it's easy to integrate:
 
