@@ -143,7 +143,7 @@ class WaybackCrawler(object):
 			# If only * is supported, the results of latest year are returned.
 			# I found that it returned wrong results if the month and day numbers are small like 0101,
 			# so a bigger number is used to match wildly.
-			wayback_page_year = "/%s%d0601000000*/%s" % ( self.prefix, year, self.url )
+			wayback_page_year = "%s/%d0601000000*/%s" % ( self.prefix, year, self.url )
 			page_year, his_urls = self._parse_wayback_page(wayback_page_year)
 
 			# To exclude duplicated items that don't match the year
